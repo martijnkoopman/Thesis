@@ -1,7 +1,7 @@
 # MSc Geomatics thesis: 3D path-finding in a voxelized model of an indoor environment 
 
 ## Synopsis
-This repository contains 14 programmable filters for [ParaView](http://www.paraview.org). These filters enable hierarchical path-finding in a model of an indoor environment. This code is the implementation of my thesis research.
+This repository contains 14 programmable filters for [ParaView](http://www.paraview.org). These filters should be executed in consequtive order to enable hierarchical path-finding in a model of an indoor environment. The path-finding method supports different kinds of actors by incorporating their size (width & height) and mode of locomotion (drive, walk, fly). The input model is decomposed into a cells and a graph is derived from this cell decomposition. Path-finding is then performed on two levels: first in the graph and then in the cell decomposition. 
 
 ### Required input model
 
@@ -9,22 +9,25 @@ The input model has to be a vtkImageData (file extension .vtk or .vti). Empty sp
 
 ## Steps
 
+The entire methodology involves 4 steps. The first 3 steps have to be performed only once while the 4th step - the actual path-finding - can be performed multiple times.
+
 1. Dilation the input model
 2. Semantical enrichment the input model
 3. Generation of the cell-and-portal graph
 4. Hierarchical path-finding
 
 ### 1. Dilation of the input model
-The input model is dilated by creating a horizontal buffer around the geometry and extruding the geometry downwards.
-The radius of the horizontal buffer and amount of downward extrusion has to be defined by the user. The radius of the buffer should be half the width of the actor and the downward extrusion should be the height of the actor - 1.
+The size of the actor is incorporated by dilating the input model.
+The input model is dilated by creating a horizontal buffer around the geometry and extruding the geometry downwards. 
+The radius of the buffer should be half the width of the actor and the downward extrusion should be the height of the actor - 1.
 
 Define variables *radius* and *vertical_extrusion* in script *1_dilate.py* and run the script.
 
 ### 2. Semantical enrichment of the input model
+Distinction between the three different modes of locomotion (drive, walk, fly) is made by constructing the correct navigable spaces.
+Driving actors are only capable of navigating over flat floors, walking actors are also capable of navigating over stairs and flying actors are also capable of navigating over obstacles. Next to that, walking and driving actors are bound to a ground surface while a flying actor can freely move up and down. It is therefore required that the space is semantically labelled by one of the following classes: floor (1), stairs (2) or obstacle (3).
 
-The dilated model is semantically enriched with the following classes: floor (1), stairs (2) or obstacle (3).
-
-This involves 5 steps:
+Semantically labelling the dilated model involves 5 steps:
 
 1. Extraction of horizontal surfaces
 2. Segmentation of horizontal surfaces
@@ -48,4 +51,7 @@ Run script: *2_4_stairs_labelling.py*
 Run script: *2_5_propagate_labels_up.py*
 
 ## 3. Generation of the cell-and-portal graph
+...
+
+## 4. Hierarchical path-finding
 ...
