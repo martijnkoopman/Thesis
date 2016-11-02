@@ -7,7 +7,7 @@ This repository contains 14 programmable filters for [ParaView](http://www.parav
 
 The input model has to be a vtkImageData (file extension .vtk or .vti). Empty space has value 0 and non-empty space has value > 0.
 
-## Steps
+## Usage
 
 The entire methodology involves 4 steps. The first 3 steps have to be performed only once while the 4th step - the actual path-finding - can be performed multiple times.
 
@@ -16,12 +16,18 @@ The entire methodology involves 4 steps. The first 3 steps have to be performed 
 3. Cell-and-portal graph (CPG) generation
 4. Hierarchical path-finding
 
+
+![Script execution order](doc/flow.png)
+
+
 ### 1. Dilation of the input model
 The size of the actor is incorporated by dilating the input model.
 The input model is dilated by creating a horizontal buffer around the geometry and extruding the geometry downwards. 
-The radius of the buffer should be half the width of the actor and the downward extrusion should be the height of the actor - 1.
+The radius of the buffer should be half the diameter of the actor and the downward extrusion should be the height of the actor - 1.
 
-Define variables *radius* and *vertical_extrusion* in script *1_dilate.py* and run the script.
+Define variables: *radius* and *vertical_extrusion*
+
+Run script: *1_dilate.py*
 
 ### 2. Semantic labelling of the dilated model
 Distinction between the three different modes of locomotion (drive, walk, fly) is made by constructing the correct navigable spaces.
@@ -50,27 +56,33 @@ Run script: *2_4_stairs_labelling.py*
 #### 2.5. Upwards propagation of labels
 Run script: *2_5_propagate_labels_up.py*
 
-## 3. Cell-and-portal graph (CPG) generation
+### 3. Cell-and-portal graph (CPG) generation
 
 Cell-and-portal graph (CPG) generation involves two steps:
 
 1. Cell generation and portal detection
 2. Graph generation
 
-### 3.1. Cell generation and portal detection
+#### 3.1. Cell generation and portal detection
 
 [Volumetric Cell-and-Portal Generation](https://hal.inria.fr/inria-00510188/file/mcp.pdf)
-...
+
+#### 3.1.1. Assigning infinity to empty space
 Run script: *3_1_infinity.py*
 
+#### 3.1.2. Distance transformation
 Run script: *3_2_distance_field.py*
 
+#### 3.1.3. Generating cells
 Run script: *3_3_cells*
 
+#### 3.1.4. Compressing cells
 Run script: *3_4_compress_cells*
 
+#### 3.1.5. Merging cells
 Run script: *3_5_merge_cells*
 
+#### 3.1.4. Detecting portals
 Run script: *3_6_portals*
 
 ### 3.2. Graph generation
@@ -81,4 +93,9 @@ Run script: *3_7_graph*
 
 ## 4. Hierarchical path-finding
 
-Run script: *4_path*
+Script: *4_path*
+
+Pparameters: xx
+
+Inputs: graph, cells, start position (ProbeLocation), end position (ProbeLocation)
+
