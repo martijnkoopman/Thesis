@@ -25,9 +25,8 @@ The size of the actor is incorporated by dilating the input model.
 The input model is dilated by creating a horizontal buffer around the geometry and extruding the geometry downwards. 
 The radius of the buffer should be half the diameter of the actor and the downward extrusion should be the height of the actor - 1.
 
-Define variables: *radius* and *vertical_extrusion*
-
-Run script: *1_dilate.py*
+* Define parameters: *radius* and *vertical_extrusion*
+* Run script: *1_dilate.py*
 
 ### 2. Semantic labelling of the dilated model
 Distinction between the three different modes of locomotion (drive, walk, fly) is made by constructing the correct navigable spaces.
@@ -44,7 +43,7 @@ Semantically labelling of the dilated model involves 5 steps:
 #### 2.1. Extraction of horizontal surfaces
 Horizontal surfaces are extracted from the model by selecting all non-empty space voxels that have an empty space voxel above it. Only these voxels are required for the semantic labelling process.
 
-Run script: *2_1_horizontal_surfaces.py* 
+* Run script: *2_1_horizontal_surfaces.py* 
 
 #### 2.2. Segmentation of horizontal surfaces
 The horizontal surfaces are segmented using a flood-fill algorithm. This flood-fill algorithm starts at the voxel with the lowest elevation and then expands in all directions. Adjacent voxels are assigned to the same segment whereas disconnected voxels are assigned to new segments. The flood-fill algorithm is capable of expanding upwards and downwards by a given predefined number (vertical footspan). This ensures that the floors and stairs are assigned to the same segment.
@@ -105,7 +104,7 @@ The cells should represent parts of navigable space. Since walking and driving a
 * Define parameters: *allowed semantic classes*
 * Run script: *3_6_portals*
 
-### 3.7. Graph generation
+#### 3.7. Graph generation
 
 * Define parameters: *vertical footspan*
 * Run script: *3_7_graph*
