@@ -1,11 +1,11 @@
 # MSc Geomatics thesis: 3D path-finding in a voxelized model of an indoor environment 
 
 ## Synopsis
-This repository contains 14 programmable filters for [ParaView](http://www.paraview.org). These filters should be executed in consequtive order to enable hierarchical path-finding in a model of an indoor environment. The path-finding method supports different kinds of actors by incorporating their size (width & height) and mode of locomotion (drive, walk, fly). The input model is decomposed into a cells and a graph is derived from this cell decomposition. Path-finding is then performed on two levels: first in the graph and then in the cell decomposition. 
+This repository contains 14 programmable filters for [ParaView](http://www.paraview.org). These filters should be executed in consequtive order to enable hierarchical path-finding in a model of an indoor environment. The path-finding method supports different kinds of actors by incorporating their size (diameter & height) and mode of locomotion (drive, walk, fly). The input model is decomposed into cells and a graph is derived from this cell decomposition. Path-finding is then performed on two levels: first in the graph and then in the cell decomposition. 
 
-### Required input model
+### Input model
 
-The input model has to be a vtkImageData (file extension .vtk or .vti). Empty space has value 0 and non-empty space has value > 0.
+The input model must be of type vtkImageData (file extension .vtk or .vti). Empty space has value 0 and non-empty space has value > 0.
 
 ## Usage
 
@@ -42,60 +42,76 @@ Semantically labelling of the dilated model involves 5 steps:
 5. Upwards propagation of labels
 
 #### 2.1. Extraction of horizontal surfaces
-Run script: *2_1_horizontal_surfaces.py*
+Horizontal surfaces are extracted from the model by selecting all non-empty space voxels that have an empty space voxel above it. Only these voxels are required for the semantic labelling process.
+
+Run script: *2_1_horizontal_surfaces.py* 
 
 #### 2.2. Segmentation of horizontal surfaces
-Run script: *2_2_segmentation.py*
+The horizontal surfaces are segmented using a flood-fill algorithm. This flood-fill algorithm starts at the voxel with the lowest elevation and then expands in all directions. Adjacent voxels are assigned to the same segment whereas disconnected voxels are assigned to new segments. The flood-fill algorithm is capable of expanding upwards and downwards by a given predefined number (vertical footspan). This ensures that the floors and stairs are assigned to the same segment.
+
+* Define parameter: *vertical footspan*
+* Run script: *2_2_segmentation.py* 
 
 #### 2.3. Selection of floor segment
-Run script: *2_3_floor_labelling.py*
+One segment (in most situations the first one) embodies the floors and stairs. This segment is labelled floor and all other segments are labelled obstacle.
+
+* Define parameters: *segment number* 
+* Run script: *2_3_floor_labelling.py*
 
 #### 2.4. Labelling stairs by slope estimation
-Run script: *2_4_stairs_labelling.py*
+Distinguishing between floor and stairs is done by computing the slope of the surface voxels. The slope is estimated by fitting a plane through the neighbourhood of a voxel. The angle between the normal vector of this plane and a vertical up vector gives the slope. All voxels with a slope above a given threshold are labelled stairs.
+
+* Define parameters: *neighbourhood radius*, *maximum surface slope*
+* Run script: *2_4_stairs_labelling.py*
 
 #### 2.5. Upwards propagation of labels
-Run script: *2_5_propagate_labels_up.py*
+All horizontal surfaces are now labelled as one of the three classes: floor, stairs or obstacle. These labels are propagated upwards to also label the empty space above the horizontal surfaces.
+
+* Run script: *2_5_propagate_labels_up.py*
 
 ### 3. Cell-and-portal graph (CPG) generation
+The methodology for generating cells and detecting portals is an adaptation of [Volumetric Cell-and-Portal Generation](https://hal.inria.fr/inria-00510188/file/mcp.pdf).
+The methodology for constructing the graph is an adaptation of [Near Optimal Hierarchical Path-Finding](https://webdocs.cs.ualberta.ca/~mmueller/ps/hpastar.pdf).
 
-Cell-and-portal graph (CPG) generation involves two steps:
+#### 3.1. Assigning infinity to empty space
+Value infinity (a very large number) is assigned to empty space voxels and 0 to non-empty space voxels. This configuration is required for the following distance transformation.
 
-1. Cell generation and portal detection
-2. Graph generation
+* Run script: *3_1_infinity.py*
 
-#### 3.1. Cell generation and portal detection
+#### 3.2. Distance transformation
+A distance field is computed using [Chamfer distance transformation](https://studentportalen.uu.se/uusp-filearea-tool/download.action?nodeId=214320&toolAttachmentId=64777). Each location in the distance field indicates the
+distance to the nearest geometry.
 
-[Volumetric Cell-and-Portal Generation](https://hal.inria.fr/inria-00510188/file/mcp.pdf)
+* Run script: *3_2_distance_field.py*
 
-#### 3.1.1. Assigning infinity to empty space
-Run script: *3_1_infinity.py*
+#### 3.3. Generating cells
+The distance field is segmented into cells using a watershed transformation. The semantic model is also used in the watershed transformation. Newly created cells receive the same semantic label as the very first voxel of the cell and adjacent voxels may only be appended to the cell if they have the same semantic label.
 
-#### 3.1.2. Distance transformation
-Run script: *3_2_distance_field.py*
+* Set inputs: *distance field*, *semantic model*
+* Run script: *3_3_cells*
 
-#### 3.1.3. Generating cells
-Run script: *3_3_cells*
+#### 3.4. Compressing cells
+The cells should represent parts of navigable space. Since walking and driving actor are not able to fly, are these cells compressed downwards to a thickness of 1 voxel. This step should be skipped for flying actors.
 
-#### 3.1.4. Compressing cells
-Run script: *3_4_compress_cells*
+* Run script: *3_4_compress_cells*
 
-#### 3.1.5. Merging cells
-Run script: *3_5_merge_cells*
+#### 3.5. Merging cells
 
-#### 3.1.4. Detecting portals
-Run script: *3_6_portals*
+* Define parameters: *vertical footspan*, *allowed semantic classes*
+* Run script: *3_5_merge_cells*
 
-### 3.2. Graph generation
+#### 3.6. Detecting portals
 
-[Near Optimal Hierarchical Path-Finding](https://webdocs.cs.ualberta.ca/~mmueller/ps/hpastar.pdf)
+* Define parameters: *allowed semantic classes*
+* Run script: *3_6_portals*
 
-Run script: *3_7_graph*
+### 3.7. Graph generation
 
-## 4. Hierarchical path-finding
+* Define parameters: *vertical footspan*
+* Run script: *3_7_graph*
 
-Script: *4_path*
+### 4. Hierarchical path-finding
 
-Pparameters: xx
-
-Inputs: graph, cells, start position (ProbeLocation), end position (ProbeLocation)
-
+* Define parameters: 
+* Set inputs: graph, cells, start position (ProbeLocation), end position (ProbeLocation)
+* Run script: *4_path*
