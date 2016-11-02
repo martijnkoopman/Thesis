@@ -53,6 +53,7 @@ Run script: *2_5_propagate_labels_up.py*
 ## 3. Cell-and-portal graph (CPG) generation
 
 Cell-and-portal graph (CPG) generation involves two steps:
+
 1. Cell generation and portal detection
 2. Graph generation
 
